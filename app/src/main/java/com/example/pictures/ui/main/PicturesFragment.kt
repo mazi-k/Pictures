@@ -1,36 +1,47 @@
-package com.example.pictures
+package com.example.pictures.ui.main
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.pictures.databinding.ActivityMainBinding
+import com.example.pictures.R
+import com.example.pictures.databinding.PicturesFragmentBinding
 import com.example.pictures.models.PictureModel
 import com.example.pictures.network.PicturesResponseData
 import com.example.pictures.network.PicturesRetrofitImpl
-import com.example.pictures.ui.AlertDialogFragment
-import com.example.pictures.ui.isOnline
+import com.example.pictures.ui.dialog.AlertDialogFragment
+import com.example.pictures.ui.utils.isOnline
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class MainActivity : AppCompatActivity() {
+class PicturesFragment: Fragment() {
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: PicturesFragmentBinding
     private lateinit var retrofitImpl: PicturesRetrofitImpl
     private val adapter: MainAdapter by lazy { MainAdapter() }
     private lateinit var layoutManager: LinearLayoutManager
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.pictures_fragment, container, false)
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = PicturesFragmentBinding.bind(view)
+
 
         retrofitImpl = PicturesRetrofitImpl()
-        layoutManager = LinearLayoutManager(this)
+        layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = adapter
 
@@ -40,8 +51,9 @@ class MainActivity : AppCompatActivity() {
             startLoadingOrShowError()
             binding.swipeRefreshLayout.isRefreshing = false
         }
-
     }
+
+
 
     private fun getAllPictureList() {
         CoroutineScope(Dispatchers.IO ).launch {
@@ -58,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showErrorToast(errorCode: Int) {
-        Toast.makeText(this, "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG).show()
     }
 
     private fun getPictures(result: Response<List<PicturesResponseData>>): MutableList<PictureModel> {
@@ -70,18 +82,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startLoadingOrShowError() {
-        if (isOnline(applicationContext)) {
+        if (isOnline(requireActivity().applicationContext)) {
             getAllPictureList()
             binding.swipeTv.visibility = View.GONE
+            binding.loadingProgress.visibility = View.GONE
         } else {
             AlertDialogFragment.newInstance(
                 getString(R.string.dialog_title_device_is_offline),
                 getString(R.string.dialog_message_device_is_offline)
             ).show(
-                supportFragmentManager,
+                requireActivity().supportFragmentManager,
                 "DIALOG_FRAGMENT_TAG"
             )
             binding.swipeTv.visibility = View.VISIBLE
+            binding.loadingProgress.visibility = View.VISIBLE
         }
     }
 }

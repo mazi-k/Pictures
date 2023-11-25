@@ -1,4 +1,4 @@
-package com.example.pictures
+package com.example.pictures.ui.main
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import coil.load
 import androidx.recyclerview.widget.RecyclerView
+import com.example.pictures.R
 import com.example.pictures.models.PictureModel
 
 class MainAdapter : RecyclerView.Adapter<MainAdapter.RecyclerItemViewHolder>() {
@@ -19,13 +20,13 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.RecyclerItemViewHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): MainAdapter.RecyclerItemViewHolder {
+    ): RecyclerItemViewHolder {
         return RecyclerItemViewHolder(
             LayoutInflater.from(parent.context)
                 .inflate(R.layout.pic_item, parent, false) as View)
     }
 
-    override fun onBindViewHolder(holder: MainAdapter.RecyclerItemViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerItemViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
@@ -39,7 +40,7 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.RecyclerItemViewHolder>() {
                 val thisView = itemView.findViewById<ImageView>(R.id.image)
                 thisView.load(data.url) {
                     crossfade(true)
-                    placeholder(R.drawable.ic_launcher_foreground)
+                    placeholder(R.drawable.ic_image_placeholder)
                 }
             }
         }

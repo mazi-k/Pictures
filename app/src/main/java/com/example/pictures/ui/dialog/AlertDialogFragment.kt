@@ -1,8 +1,10 @@
-package com.example.pictures.ui
+package com.example.pictures.ui.dialog
 
 import android.app.Dialog
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDialogFragment
+import com.example.pictures.ui.utils.getAlertDialog
+import com.example.pictures.ui.utils.getStubAlertDialog
 
 class AlertDialogFragment : AppCompatDialogFragment() {
 

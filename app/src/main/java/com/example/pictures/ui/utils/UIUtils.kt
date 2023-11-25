@@ -1,4 +1,4 @@
-package com.example.pictures.ui
+package com.example.pictures.ui.utils
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
