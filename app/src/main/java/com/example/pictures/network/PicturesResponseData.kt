@@ -2,9 +2,25 @@ package com.example.pictures.network
 
 import com.google.gson.annotations.SerializedName
 
-data class PicturesResponseData (
+data class PicturesResponseData(
+    @SerializedName("results")
+    val data: ArrayList<Results>,
+)
+
+data class Results(
     @SerializedName("id")
-    val id: Int,
-    @SerializedName("image_url")
-    val url: String,
+    var id: String? = null,
+    @SerializedName("media")
+    var media: ArrayList<Media> = arrayListOf(),
+)
+
+data class Media(
+    @SerializedName("gif") var gif: Gif? = Gif(),
+)
+
+data class Gif(
+    @SerializedName("preview")
+    var preview: String? = null,
+    @SerializedName("url")
+    var url: String? = null,
 )

@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import coil.load
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.pictures.R
 import com.example.pictures.models.PictureModel
 
@@ -38,10 +38,11 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.RecyclerItemViewHolder>() {
         fun bind (data: PictureModel) {
             if (layoutPosition != RecyclerView.NO_POSITION) {
                 val thisView = itemView.findViewById<ImageView>(R.id.image)
-                thisView.load(data.url) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_image_placeholder)
-                }
+
+                Glide
+                    .with(thisView.context)
+                    .load(data.url)
+                    .into(thisView)
             }
         }
     }

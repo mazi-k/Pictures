@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 
 class PicturesRetrofitImpl {
 
-    private val baseUrl = "https://api.punkapi.com/v2/"
+    private val baseUrl = "https://g.tenor.com/"
 
     fun getRetrofitImpl(): PicturesAPI {
         val httpClient = OkHttpClient.Builder()

@@ -67,7 +67,9 @@ class PicturesFragment: Fragment() {
                     repository.putCachePictures(pictures)
                 }
             } else {
-                showErrorToast(result.code())
+                withContext(Dispatchers.Main){
+                    showErrorToast(result.code())
+                }
             }
         }
     }
@@ -76,10 +78,10 @@ class PicturesFragment: Fragment() {
         Toast.makeText(requireContext(), "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG).show()
     }
 
-    private fun getPictures(result: Response<List<PicturesResponseData>>): MutableList<PictureModel> {
+    private fun getPictures(result: Response<PicturesResponseData>): MutableList<PictureModel> {
         val list: MutableList<PictureModel> = mutableListOf()
-        for (picrd in result.body()?: emptyList()) {
-            list.add(PictureModel(id = picrd.id.toString(), url = picrd.url))
+        for (picrd in result.body()?.data ?: emptyList()) {
+            list.add(PictureModel(id = picrd.id.toString(), url = picrd.media[0].gif?.url?:""))
         }
         return list
     }
