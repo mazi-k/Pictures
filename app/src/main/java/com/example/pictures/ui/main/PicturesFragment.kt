@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.pictures.R
 import com.example.pictures.databinding.PicturesFragmentBinding
 import com.example.pictures.models.PictureModel
+import com.example.pictures.models.Repository
 import com.example.pictures.network.PicturesResponseData
 import com.example.pictures.network.PicturesRetrofitImpl
 import com.example.pictures.ui.dialog.AlertDialogFragment
@@ -26,6 +27,7 @@ class PicturesFragment: Fragment() {
     private lateinit var retrofitImpl: PicturesRetrofitImpl
     private val adapter: MainAdapter by lazy { MainAdapter() }
     private lateinit var layoutManager: LinearLayoutManager
+    private val repository = Repository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,6 +64,7 @@ class PicturesFragment: Fragment() {
                 val pictures = getPictures(result)
                 withContext(Dispatchers.Main){
                     adapter.setData(pictures)
+                    repository.putCachePictures(pictures)
                 }
             } else {
                 showErrorToast(result.code())
@@ -87,15 +90,21 @@ class PicturesFragment: Fragment() {
             binding.swipeTv.visibility = View.GONE
             binding.loadingProgress.visibility = View.GONE
         } else {
-            AlertDialogFragment.newInstance(
-                getString(R.string.dialog_title_device_is_offline),
-                getString(R.string.dialog_message_device_is_offline)
-            ).show(
-                requireActivity().supportFragmentManager,
-                "DIALOG_FRAGMENT_TAG"
-            )
-            binding.swipeTv.visibility = View.VISIBLE
-            binding.loadingProgress.visibility = View.VISIBLE
+            if (repository.getCachePictures().isEmpty()) {
+                AlertDialogFragment.newInstance(
+                    getString(R.string.dialog_title_device_is_offline),
+                    getString(R.string.dialog_message_device_is_offline)
+                ).show(
+                    requireActivity().supportFragmentManager,
+                    "DIALOG_FRAGMENT_TAG"
+                )
+                binding.swipeTv.visibility = View.VISIBLE
+                binding.loadingProgress.visibility = View.VISIBLE
+            } else {
+                adapter.setData(repository.getCachePictures())
+                binding.swipeTv.visibility = View.GONE
+                binding.loadingProgress.visibility = View.GONE
+            }
         }
     }
 }
