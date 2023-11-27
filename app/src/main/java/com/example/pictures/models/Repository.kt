@@ -2,8 +2,9 @@ package com.example.pictures.models
 
 object Repository {
 
-    private var cache: MutableList<PictureModel> = mutableListOf()
+    private val cache: MutableList<PictureModel> = mutableListOf()
     private var next: Int = 0
+    private const val LIMIT_ON_PAGE = 20
 
     fun getCachePictures() = cache
 
@@ -13,8 +14,8 @@ object Repository {
         }
     }
 
-    fun setNext(newNextPos: Int) {
-        next = newNextPos
+    fun setNext() {
+        next += LIMIT_ON_PAGE
     }
 
     fun getNext() = next

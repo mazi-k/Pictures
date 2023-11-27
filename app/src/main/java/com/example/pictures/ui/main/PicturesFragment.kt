@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class PicturesFragment: Fragment() {
+class PicturesFragment : Fragment() {
 
     private lateinit var binding: PicturesFragmentBinding
     private lateinit var retrofitImpl: PicturesRetrofitImpl
@@ -41,66 +41,44 @@ class PicturesFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = PicturesFragmentBinding.bind(view)
-
-
         retrofitImpl = PicturesRetrofitImpl()
-        layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.layoutManager = layoutManager
-        binding.recyclerView.adapter = adapter
 
+        initRecycler()
         startLoadingOrShowError()
+        initRefreshLayout()
+    }
 
+    private fun initRefreshLayout() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             startLoadingOrShowError()
             binding.swipeRefreshLayout.isRefreshing = false
         }
+    }
+
+    private fun initRecycler() {
+        layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.adapter = adapter
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    binding.loadingProgress.visibility = View.VISIBLE
-                    getPictureList()
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if (visibleItemCount + firstVisibleItemPosition >= totalItemCount) {
+                    startLoadingOrShowError()
                 }
             }
         })
     }
 
 
-
-    private fun getPictureList() {
-        CoroutineScope(Dispatchers.IO ).launch {
-            val result = retrofitImpl.getRetrofitImpl().getPictures(repository.getNext())
-            if (result.isSuccessful) {
-                val pictures = getPicturesByResponse(result)
-                withContext(Dispatchers.Main){
-                    repository.addCachePictures(pictures)
-                    adapter.setData(repository.getCachePictures())
-                    repository.setNext(result.body()?.next?.toInt()?:0)
-                    binding.loadingProgress.visibility = View.GONE
-                }
-            } else {
-                withContext(Dispatchers.Main){
-                    showErrorToast(result.code())
-                }
-            }
-        }
-    }
-
-    private fun showErrorToast(errorCode: Int) {
-        Toast.makeText(requireContext(), "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG).show()
-    }
-
-    private fun getPicturesByResponse(result: Response<PicturesResponseData>): MutableList<PictureModel> {
-        val list: MutableList<PictureModel> = mutableListOf()
-        for (picrd in result.body()?.data ?: emptyList()) {
-            list.add(PictureModel(id = picrd.id.toString(), url = picrd.media[0].gif?.url?:""))
-        }
-        return list
-    }
-
     private fun startLoadingOrShowError() {
         if (isOnline(requireActivity().applicationContext)) {
+            binding.loadingProgress.visibility = View.VISIBLE
             getPictureList()
             binding.swipeTv.visibility = View.GONE
         } else {
@@ -118,5 +96,43 @@ class PicturesFragment: Fragment() {
                 binding.swipeTv.visibility = View.GONE
             }
         }
+    }
+
+    private fun getPictureList() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = retrofitImpl.getRetrofitImpl().getPictures(repository.getNext())
+            if (result.isSuccessful) {
+                val pictures = getPicturesByResponse(result)
+                withContext(Dispatchers.Main) {
+                    repository.addCachePictures(pictures)
+                    adapter.setData(repository.getCachePictures())
+                    binding.loadingProgress.visibility = View.GONE
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    showErrorToast(result.code())
+                }
+            }
+        }
+        repository.setNext()
+    }
+
+    private fun getPicturesByResponse(result: Response<PicturesResponseData>): MutableList<PictureModel> {
+        val list: MutableList<PictureModel> = mutableListOf()
+        for (picrd in result.body()?.data ?: emptyList()) {
+            list.add(
+                PictureModel(
+                    id = picrd.id.toString(),
+                    urlGif = picrd.media[0].gif?.url ?: "",
+                    urlPic = picrd.media[0].gif?.preview ?: ""
+                )
+            )
+        }
+        return list
+    }
+
+    private fun showErrorToast(errorCode: Int) {
+        Toast.makeText(requireContext(), "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG)
+            .show()
     }
 }
