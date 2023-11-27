@@ -17,20 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:id="@+id/load_more_loading_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ProgressBar
-                android:id="@+id/loading_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="?android:attr/progressBarStyleSmall"/>
-        </LinearLayout>
-
         <TextView
             android:id="@+id/swipeTv"
             android:layout_width="wrap_content"
@@ -45,6 +31,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="24dp" />
+
+
+        <ProgressBar
+            android:id="@+id/loading_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_gravity="center|bottom"/>
 
     </FrameLayout>
 

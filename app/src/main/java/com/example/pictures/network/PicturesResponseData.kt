@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class PicturesResponseData(
     @SerializedName("results")
     val data: ArrayList<Results>,
+    @SerializedName("next")
+    var next: String? = null
 )
 
 data class Results(

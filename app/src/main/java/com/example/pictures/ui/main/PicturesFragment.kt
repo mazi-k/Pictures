@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.pictures.R
 import com.example.pictures.databinding.PicturesFragmentBinding
 import com.example.pictures.models.PictureModel
@@ -53,18 +54,30 @@ class PicturesFragment: Fragment() {
             startLoadingOrShowError()
             binding.swipeRefreshLayout.isRefreshing = false
         }
+
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    binding.loadingProgress.visibility = View.VISIBLE
+                    getPictureList()
+                }
+            }
+        })
     }
 
 
 
-    private fun getAllPictureList() {
+    private fun getPictureList() {
         CoroutineScope(Dispatchers.IO ).launch {
-            val result = retrofitImpl.getRetrofitImpl().getPictures()
+            val result = retrofitImpl.getRetrofitImpl().getPictures(repository.getNext())
             if (result.isSuccessful) {
-                val pictures = getPictures(result)
+                val pictures = getPicturesByResponse(result)
                 withContext(Dispatchers.Main){
-                    adapter.setData(pictures)
-                    repository.putCachePictures(pictures)
+                    repository.addCachePictures(pictures)
+                    adapter.setData(repository.getCachePictures())
+                    repository.setNext(result.body()?.next?.toInt()?:0)
+                    binding.loadingProgress.visibility = View.GONE
                 }
             } else {
                 withContext(Dispatchers.Main){
@@ -78,7 +91,7 @@ class PicturesFragment: Fragment() {
         Toast.makeText(requireContext(), "Что-то пошло не так: $errorCode", Toast.LENGTH_LONG).show()
     }
 
-    private fun getPictures(result: Response<PicturesResponseData>): MutableList<PictureModel> {
+    private fun getPicturesByResponse(result: Response<PicturesResponseData>): MutableList<PictureModel> {
         val list: MutableList<PictureModel> = mutableListOf()
         for (picrd in result.body()?.data ?: emptyList()) {
             list.add(PictureModel(id = picrd.id.toString(), url = picrd.media[0].gif?.url?:""))
@@ -88,9 +101,8 @@ class PicturesFragment: Fragment() {
 
     private fun startLoadingOrShowError() {
         if (isOnline(requireActivity().applicationContext)) {
-            getAllPictureList()
+            getPictureList()
             binding.swipeTv.visibility = View.GONE
-            binding.loadingProgress.visibility = View.GONE
         } else {
             if (repository.getCachePictures().isEmpty()) {
                 AlertDialogFragment.newInstance(
@@ -101,11 +113,9 @@ class PicturesFragment: Fragment() {
                     "DIALOG_FRAGMENT_TAG"
                 )
                 binding.swipeTv.visibility = View.VISIBLE
-                binding.loadingProgress.visibility = View.VISIBLE
             } else {
                 adapter.setData(repository.getCachePictures())
                 binding.swipeTv.visibility = View.GONE
-                binding.loadingProgress.visibility = View.GONE
             }
         }
     }
