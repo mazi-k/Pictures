@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Pictures</string>
+    <string name="dialog_button_cancel">Cancel</string>
+    <string name="dialog_title_stub">Undefined error</string>
+    <string name="dialog_title_device_is_offline">No internet connection</string>
+    <string name="dialog_message_device_is_offline">You can not use app without internet connection. Please, check
+        internet connection.
+    </string>
+    <string name="swipe_down">Check your internet connection and swipe down for update</string>
 </resources>
