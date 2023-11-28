@@ -69,6 +69,7 @@ class PicturesFragment : Fragment() {
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
                 if (visibleItemCount + firstVisibleItemPosition >= totalItemCount) {
+                    binding.loadingProgress.visibility = View.VISIBLE
                     startLoadingOrShowError()
                 }
             }
@@ -94,6 +95,8 @@ class PicturesFragment : Fragment() {
             } else {
                 adapter.setData(repository.getCachePictures())
                 binding.swipeTv.visibility = View.GONE
+                binding.loadingProgress.visibility = View.VISIBLE
+                Toast.makeText(requireContext(), "Проверьте соединение с интернетом и повторите", Toast.LENGTH_LONG).show()
             }
         }
     }
